@@ -1,0 +1,69 @@
+---
+# 5-Fold Ensemble — Binary Region-Based Training
+# Five nnUNet teachers (one per fold) on a multi-cohort prostate MR dataset
+# (e.g., PICAI + TCIA + Stanford). Replace placeholder paths below with paths
+# that exist on your system. See README.md for details.
+
+# Per-cohort splits (5-fold cross-validation case-name lists)
+picai_fold_json   : "<PATH_TO_PICAI_5FOLD_SPLITS>.json"
+stanford_fold_json: "<PATH_TO_STANFORD_5FOLD_SPLITS>.json"
+ucla_fold_json    : "<PATH_TO_THIRD_COHORT_5FOLD_SPLITS>.json"
+
+# JSON file storing per-case z-score normalization stats {case_id: {mean, std}}
+stats_per_case_file: "<PATH_TO_PER_CASE_NORMALIZATION_STATS>.json"
+
+# Per-cohort held-out test case lists (used by the test script only)
+picai_test_json   : "<PATH_TO_PICAI_TEST_SPLIT>.json"
+stanford_test_json: "<PATH_TO_STANFORD_TEST_SPLIT>.json"
+ucla_test_json    : "<PATH_TO_THIRD_COHORT_TEST_SPLIT>.json"
+
+
+dynamic_case_loading: false
+teacher_names: ['fold0', 'fold1', 'fold2', 'fold3', 'fold4']
+features_format: 'pt'  # Use .pt format (faster loading than .npz)
+
+# Prediction type: 'binary' or '3class'
+# - 'binary': 2 output channels [prostate, cancer (PCa+csPCa combined)]
+# - '3class': 3 output channels [prostate, PCa, csPCa]
+pred_type: 'binary'
+
+# Cohort selection flags
+train_picai:    true
+train_stanford: true
+train_ucla:     true
+
+use_T2:  true
+use_ADC: true
+use_DWI: true
+
+fold_num: -1
+gpu_device: 0
+
+
+# Optional checkpoint loading
+load_checkpoint: false
+load_cp_no: null
+model_weights_path: null
+region_based: true
+
+# Cases to drop (ID strings)
+remove_cases: []
+
+image_dirs:
+    file_paths:
+        # Stacked-modality nnUNet-style image directory (T2/ADC/DWI all live here)
+        T2_dir:      "<PATH_TO_NNUNET_DATASET>/imagesTr/"
+        ADC_dir:     "<PATH_TO_NNUNET_DATASET>/imagesTr/"
+        DWI_dir:     "<PATH_TO_NNUNET_DATASET>/imagesTr/"
+        mask_dir:    "<PATH_TO_NNUNET_DATASET>/masksTr/"
+        lesions_dir: "<PATH_TO_NNUNET_DATASET>/labelsTr/"
+
+    # Pre-extracted per-fold teacher features (one directory per fold).
+    # Each directory should contain *.pt feature tensors keyed by case ID.
+    teachers_features_paths:
+        nnunet: "<PATH_TO_TEACHER_FEATURES>/fold0"
+        fold0:  "<PATH_TO_TEACHER_FEATURES>/fold0"
+        fold1:  "<PATH_TO_TEACHER_FEATURES>/fold1"
+        fold2:  "<PATH_TO_TEACHER_FEATURES>/fold2"
+        fold3:  "<PATH_TO_TEACHER_FEATURES>/fold3"
+        fold4:  "<PATH_TO_TEACHER_FEATURES>/fold4"
